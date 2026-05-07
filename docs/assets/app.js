@@ -22,6 +22,14 @@
     maxZoom: 19,
   }).addTo(map);
 
+  // Heat layers per category — built lazily, color-tinted via gradient
+  const heatLayers = {};
+  const heatGradients = {
+    liquor:   { 0.2: '#fff5f4', 0.5: '#e88f8e', 0.8: '#b8312f', 1.0: '#7a1a18' },
+    cannabis: { 0.2: '#eef7f0', 0.5: '#7fc09a', 0.8: '#2e7d4f', 1.0: '#1a4a2e' },
+    tobacco:  { 0.2: '#fdf3e7', 0.5: '#e3b378', 0.8: '#c97a1f', 1.0: '#7a4810' },
+  };
+
   // One cluster group per category so toggles stay snappy
   const clusters = {};
   ['liquor', 'cannabis', 'tobacco'].forEach((cat) => {
@@ -43,6 +51,7 @@
 
   let allFeatures = [];
   const state = {
+    view: 'markers',  // 'markers' | 'heat'
     cats: { liquor: true, cannabis: true, tobacco: true },
     borough: '',
     query: '',
@@ -91,18 +100,53 @@
     return true;
   }
 
+  function clearHeatLayers() {
+    Object.values(heatLayers).forEach((layer) => {
+      if (layer && map.hasLayer(layer)) map.removeLayer(layer);
+    });
+  }
+
   function applyFilters() {
-    Object.values(clusters).forEach((g) => g.clearLayers());
     const buckets = { liquor: [], cannabis: [], tobacco: [] };
+    const heatPoints = { liquor: [], cannabis: [], tobacco: [] };
     let visible = 0;
     for (const f of allFeatures) {
       if (!passesFilters(f.properties)) continue;
       buckets[f.properties.category].push(f._marker);
+      const [lon, lat] = f.geometry.coordinates;
+      heatPoints[f.properties.category].push([lat, lon, 1]);
       visible++;
     }
-    Object.entries(buckets).forEach(([cat, arr]) => {
-      if (arr.length) clusters[cat].addLayers(arr);
-    });
+
+    if (state.view === 'markers') {
+      clearHeatLayers();
+      Object.values(clusters).forEach((g) => {
+        g.clearLayers();
+        if (!map.hasLayer(g)) map.addLayer(g);
+      });
+      Object.entries(buckets).forEach(([cat, arr]) => {
+        if (arr.length) clusters[cat].addLayers(arr);
+      });
+    } else {
+      // heat view
+      Object.values(clusters).forEach((g) => {
+        g.clearLayers();
+        if (map.hasLayer(g)) map.removeLayer(g);
+      });
+      clearHeatLayers();
+      Object.entries(heatPoints).forEach(([cat, pts]) => {
+        if (!pts.length) return;
+        heatLayers[cat] = L.heatLayer(pts, {
+          radius: 22,
+          blur: 18,
+          maxZoom: 16,
+          minOpacity: 0.35,
+          gradient: heatGradients[cat],
+        });
+        heatLayers[cat].addTo(map);
+      });
+    }
+
     document.getElementById('visible-count').textContent =
       `${visible.toLocaleString()} visible`;
     if (table) {
@@ -111,6 +155,14 @@
   }
 
   function bindControls() {
+    document.querySelectorAll('.view-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.view = btn.dataset.view;
+        applyFilters();
+      });
+    });
     document.querySelectorAll('.cat-toggle input').forEach((el) => {
       el.addEventListener('change', () => {
         state.cats[el.dataset.cat] = el.checked;
@@ -130,9 +182,11 @@
       }, 150);
     });
     document.getElementById('reset-btn').addEventListener('click', () => {
+      state.view = 'markers';
       state.cats = { liquor: true, cannabis: true, tobacco: true };
       state.borough = '';
       state.query = '';
+      document.querySelectorAll('.view-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === 'markers'));
       document.querySelectorAll('.cat-toggle input').forEach((el) => (el.checked = true));
       document.getElementById('borough-filter').value = '';
       document.getElementById('search').value = '';

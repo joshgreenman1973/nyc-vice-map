@@ -101,6 +101,29 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--vc-rule);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+.view-btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  color: var(--vc-muted);
+  border-right: 1px solid var(--vc-rule);
+}
+.view-btn:last-child { border-right: none; }
+.view-btn.active {
+  background: var(--vc-ink);
+  color: #fff;
+}
+
 #borough-filter, #search {
   font: inherit;
   font-size: 14px;

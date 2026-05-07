@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="assets/styles.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="https://unpkg.com/tabulator-tables@5.5.4/dist/js/tabulator.min.js"></script>
 </head>
 <body>
@@ -43,6 +44,10 @@
     </label>
   </div>
   <div class="control-row">
+    <div class="view-toggle" role="tablist" aria-label="Map view">
+      <button type="button" class="view-btn active" data-view="markers">Markers</button>
+      <button type="button" class="view-btn" data-view="heat">Density</button>
+    </div>
     <select id="borough-filter">
       <option value="">All boroughs</option>
       <option>Manhattan</option>
