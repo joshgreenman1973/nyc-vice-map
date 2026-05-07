@@ -176,7 +176,23 @@ def pull_cannabis():
 
 # ------------------------------- DCWP tobacco --------------------------------
 
+def _to_float(x):
+    try:
+        return float(x) if x not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
 def pull_tobacco():
+    """Pull DCWP tobacco + e-cig licenses, then dedupe by address.
+
+    A single storefront can hold both a Tobacco Retail Dealer and an Electronic
+    Cigarette Dealer license. Without dedup, that storefront appears twice on
+    the map. We collapse co-located licenses into one feature with a combined
+    subcategory ("Tobacco + e-cigarette").
+    """
+    from collections import defaultdict
+
     print("[tobacco] pulling DCWP licenses...", file=sys.stderr)
     where = (
         "license_status in ('Active','Ready for Renewal') AND "
@@ -187,38 +203,66 @@ def pull_tobacco():
         f"$where={urllib.parse.quote(where)}"
     )
     rows = list(paginate(base))
-    print(f"[tobacco] {len(rows)} rows", file=sys.stderr)
-    out = []
+    print(f"[tobacco] {len(rows)} raw license rows", file=sys.stderr)
+
+    # Group by normalized address. Use BBL when available (most reliable);
+    # otherwise normalized building + street + zip.
+    def addr_key(r):
+        bbl = (r.get("bbl") or "").strip()
+        if bbl and bbl != "0":
+            return ("bbl", bbl)
+        building = (r.get("address_building") or "").strip().upper()
+        street = (r.get("address_street_name") or "").strip().upper()
+        zip_ = (r.get("address_zip") or "").strip()
+        return ("addr", building, street, zip_)
+
+    grouped = defaultdict(list)
     for r in rows:
-        lat = r.get("latitude")
-        lon = r.get("longitude")
-        try:
-            lat = float(lat) if lat else None
-            lon = float(lon) if lon else None
-        except (TypeError, ValueError):
-            lat = lon = None
-        building = r.get("address_building", "") or ""
-        street = r.get("address_street_name", "") or ""
+        grouped[addr_key(r)].append(r)
+
+    out = []
+    for key, group in grouped.items():
+        cats = sorted({r.get("business_category", "") for r in group})
+        if len(cats) > 1:
+            subcategory = "Tobacco + e-cigarette"
+        else:
+            subcategory = cats[0]
+
+        # Prefer a record with valid coordinates as the canonical row
+        primary = next(
+            (r for r in group if _to_float(r.get("latitude")) and _to_float(r.get("longitude"))),
+            group[0],
+        )
+        lat = _to_float(primary.get("latitude"))
+        lon = _to_float(primary.get("longitude"))
+        building = primary.get("address_building", "") or ""
+        street = primary.get("address_street_name", "") or ""
         addr_line = (building + " " + street).strip()
-        city = r.get("address_city", "") or ""
-        zip_ = r.get("address_zip", "") or ""
+        city = primary.get("address_city", "") or ""
+        zip_ = primary.get("address_zip", "") or ""
+
+        license_ids = "; ".join(sorted(r.get("license_nbr", "") for r in group if r.get("license_nbr")))
+        statuses = sorted({r.get("license_status", "") for r in group if r.get("license_status")})
+
         out.append({
-            "id": f"dcwp:{r.get('license_nbr','')}",
+            "id": f"dcwp:{primary.get('license_nbr','')}",
             "category": "tobacco",
-            "subcategory": r.get("business_category", ""),
-            "name": (r.get("dba_trade_name") or r.get("business_name") or "").strip(),
+            "subcategory": subcategory,
+            "name": (primary.get("dba_trade_name") or primary.get("business_name") or "").strip(),
             "address": ", ".join(p for p in [addr_line, city, "NY", zip_] if p),
             "address_query": f"{addr_line}, {city}, NY {zip_}",
-            "borough": (r.get("address_borough") or "").title(),
+            "borough": (primary.get("address_borough") or "").title(),
             "zip": zip_,
-            "license_id": r.get("license_nbr", ""),
-            "license_status": r.get("license_status", ""),
-            "expiration_date": (r.get("lic_expir_dd") or "")[:10],
+            "license_id": license_ids,
+            "license_count": len(group),
+            "license_status": ", ".join(statuses),
+            "expiration_date": (primary.get("lic_expir_dd") or "")[:10],
             "lat": lat,
             "lon": lon,
             "source": "NYC Department of Consumer and Worker Protection",
             "source_url": "https://data.cityofnewyork.us/d/w7w3-xahh",
         })
+    print(f"[tobacco] {len(out)} unique storefronts (after dedup)", file=sys.stderr)
     return out
 
 

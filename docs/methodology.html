@@ -47,7 +47,7 @@
     <tr>
       <td><strong>Tobacco and e-cigarette retailers</strong></td>
       <td>New York City Department of Consumer and Worker Protection — <a href="https://data.cityofnewyork.us/d/w7w3-xahh" target="_blank" rel="noopener">Legally Operating Businesses</a>.</td>
-      <td><code>business_category IN ('Tobacco Retail Dealer', 'Electronic Cigarette Dealer')</code> and license status is Active or Ready for Renewal.</td>
+      <td><code>business_category IN ('Tobacco Retail Dealer', 'Electronic Cigarette Dealer')</code> and license status is Active or Ready for Renewal. Licenses are deduplicated by address: a single storefront that holds both a tobacco and an e-cigarette license appears as one dot with subcategory "Tobacco + e-cigarette".</td>
       <td>Latitude and longitude come from the dataset's built-in coordinate fields.</td>
     </tr>
   </tbody>
@@ -70,6 +70,8 @@
   <li><strong>Co-located businesses.</strong> A single storefront can hold multiple licenses (for example, a bodega may be both a tobacco dealer and a beer-licensed grocery). On the map these appear as overlapping dots in different categories.</li>
   <li><strong>Geocoding errors.</strong> Most addresses geocode cleanly, but a small number resolve to the centroid of a long block, an incorrect side of a street, or fail outright. The downloadable CSV preserves the original address as reported by the regulator.</li>
   <li><strong>Cannabis license status churn.</strong> The OCM dataset changes weekly as new licenses are issued, surrendered, or moved between conditional and full status. The map shows whatever status was current at the time of the last refresh.</li>
+  <li><strong>Tobacco license deduplication.</strong> Roughly a third of New York City's tobacco-licensed storefronts also hold a separate Electronic Cigarette Dealer license. Without dedup, those addresses would appear as two stacked dots and double-count in the legend. The build script collapses co-located licenses (same BBL, or same building number, street, and ZIP) into a single feature labeled "Tobacco + e-cigarette." The license-count field on each feature records how many underlying licenses were merged.</li>
+  <li><strong>Liquor and beer at the same address.</strong> New York's liquor law forbids holding an off-premises liquor license and an off-premises beer license at the same physical premises. About two dozen addresses in the data nonetheless appear in both categories — a small fraction of one percent. These are almost always multi-tenant buildings (corner storefronts, malls, mixed-use buildings) where two distinct businesses share an address string. We flag them honestly rather than try to silently merge them.</li>
 </ul>
 
 <h2>Reproducing this</h2>
