@@ -1,0 +1,35 @@
+name: Weekly data refresh
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC (~5am ET)
+    - cron: '0 9 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build data
+        run: python3 scripts/build_data.py
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "vital-city-bot"
+          git config user.email "noreply@vitalcity.nyc"
+          git add docs/data data/geocache.json
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "chore: weekly data refresh"
+            git push
+          fi

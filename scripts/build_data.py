@@ -67,10 +67,39 @@ def paginate(base: str, page_size: int = 50000):
 
 # ------------------------------- SLA liquor stores ---------------------------
 
-def pull_liquor():
-    print("[liquor] pulling SLA active licenses...", file=sys.stderr)
+SLA_LIQUOR_TYPES = {"Liquor Store", "Wine Store"}
+SLA_BEER_TYPES = {"Grocery Store", "Drug Store"}
+
+
+def _sla_row(r, category):
+    geo = r.get("georeference") or {}
+    coords = geo.get("coordinates") if geo.get("type") == "Point" else None
+    lon, lat = (coords[0], coords[1]) if coords else (None, None)
+    addr_parts = [r.get("actualaddressofpremises", ""), r.get("city", ""), "NY", r.get("zipcode", "")]
+    return {
+        "id": f"sla:{r.get('licensepermitid','')}",
+        "category": category,
+        "subcategory": r.get("description", ""),
+        "name": r.get("legalname", "").title(),
+        "address": ", ".join(p for p in addr_parts if p),
+        "address_query": f"{r.get('actualaddressofpremises','')}, {r.get('city','')}, NY {r.get('zipcode','')}",
+        "borough": COUNTY_TO_BOROUGH.get(r.get("premisescounty", ""), ""),
+        "zip": r.get("zipcode", ""),
+        "license_id": r.get("licensepermitid", ""),
+        "license_status": "Active",
+        "expiration_date": (r.get("expirationdate") or "")[:10],
+        "lat": lat,
+        "lon": lon,
+        "source": "NYS Liquor Authority",
+        "source_url": "https://data.ny.gov/d/9s3h-dpkz",
+    }
+
+
+def pull_sla(types, category, label):
+    print(f"[{label}] pulling SLA active licenses...", file=sys.stderr)
+    type_list = ",".join(f"'{t}'" for t in sorted(types))
     where = (
-        "description in ('Liquor Store','Wine Store') AND "
+        f"description in ({type_list}) AND "
         "premisescounty in ('New York','Kings','Queens','Bronx','Richmond')"
     )
     base = (
@@ -78,31 +107,16 @@ def pull_liquor():
         f"$where={urllib.parse.quote(where)}"
     )
     rows = list(paginate(base))
-    print(f"[liquor] {len(rows)} rows", file=sys.stderr)
-    out = []
-    for r in rows:
-        geo = r.get("georeference") or {}
-        coords = geo.get("coordinates") if geo.get("type") == "Point" else None
-        lon, lat = (coords[0], coords[1]) if coords else (None, None)
-        addr_parts = [r.get("actualaddressofpremises", ""), r.get("city", ""), "NY", r.get("zipcode", "")]
-        out.append({
-            "id": f"sla:{r.get('licensepermitid','')}",
-            "category": "liquor",
-            "subcategory": r.get("description", ""),
-            "name": r.get("legalname", "").title(),
-            "address": ", ".join(p for p in addr_parts if p),
-            "address_query": f"{r.get('actualaddressofpremises','')}, {r.get('city','')}, NY {r.get('zipcode','')}",
-            "borough": COUNTY_TO_BOROUGH.get(r.get("premisescounty", ""), ""),
-            "zip": r.get("zipcode", ""),
-            "license_id": r.get("licensepermitid", ""),
-            "license_status": "Active",
-            "expiration_date": (r.get("expirationdate") or "")[:10],
-            "lat": lat,
-            "lon": lon,
-            "source": "NYS Liquor Authority",
-            "source_url": f"https://data.ny.gov/d/9s3h-dpkz",
-        })
-    return out
+    print(f"[{label}] {len(rows)} rows", file=sys.stderr)
+    return [_sla_row(r, category) for r in rows]
+
+
+def pull_liquor():
+    return pull_sla(SLA_LIQUOR_TYPES, "liquor", "liquor")
+
+
+def pull_beer():
+    return pull_sla(SLA_BEER_TYPES, "beer", "beer")
 
 
 # ------------------------------- OCM cannabis --------------------------------
@@ -311,6 +325,14 @@ def write_outputs(rows, counts):
                 "geocoding": "Built-in georeference field",
             },
             {
+                "category": "Beer (groceries / delis / drug stores)",
+                "name": "Current Liquor Authority Active Licenses",
+                "agency": "New York State Liquor Authority",
+                "endpoint": "https://data.ny.gov/d/9s3h-dpkz",
+                "filter": "description IN ('Grocery Store','Drug Store') AND county in 5 NYC boroughs",
+                "geocoding": "Built-in georeference field",
+            },
+            {
                 "category": "Legal cannabis dispensaries",
                 "name": "Current OCM Licenses",
                 "agency": "New York State Office of Cannabis Management",
@@ -340,14 +362,16 @@ def write_outputs(rows, counts):
 
 def main():
     liquor = pull_liquor()
+    beer = pull_beer()
     cannabis = pull_cannabis()
     tobacco = pull_tobacco()
 
-    all_rows = liquor + cannabis + tobacco
+    all_rows = liquor + beer + cannabis + tobacco
     geocode_missing(all_rows)
 
     counts = {
         "liquor": len(liquor),
+        "beer": len(beer),
         "cannabis": len(cannabis),
         "tobacco": len(tobacco),
         "total": len(all_rows),

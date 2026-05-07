@@ -29,8 +29,14 @@
     <tr>
       <td><strong>Liquor stores</strong></td>
       <td>New York State Liquor Authority — <a href="https://data.ny.gov/d/9s3h-dpkz" target="_blank" rel="noopener">Current Liquor Authority Active Licenses</a> on the Open Data NY portal.</td>
-      <td><code>description IN ('Liquor Store', 'Wine Store')</code> and the premises county is one of the five boroughs. These are off-premises (package store) licenses only — bars, restaurants, and grocery beer-and-wine licenses are not included.</td>
+      <td><code>description IN ('Liquor Store', 'Wine Store')</code> and the premises county is one of the five boroughs. These are off-premises (package store) licenses only — bars, restaurants, and grocery beer licenses are not included. Under New York law, off-premises liquor stores cannot legally sell beer.</td>
       <td>Latitude and longitude come from the dataset's built-in <code>georeference</code> field.</td>
+    </tr>
+    <tr>
+      <td><strong>Beer (groceries, delis, drug stores)</strong></td>
+      <td>New York State Liquor Authority — same dataset as liquor stores.</td>
+      <td><code>description IN ('Grocery Store', 'Drug Store')</code> and the premises county is one of the five boroughs. These are off-premises beer licenses, the universe of bodegas, delis, supermarkets, and drug stores authorized to sell beer (and, with a separate endorsement, wine). This category is hidden by default on the map because it is the largest single layer.</td>
+      <td>Built-in <code>georeference</code> field.</td>
     </tr>
     <tr>
       <td><strong>Legal cannabis dispensaries</strong></td>

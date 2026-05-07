@@ -8,6 +8,7 @@
   --liquor: #b8312f;
   --cannabis: #2e7d4f;
   --tobacco: #c97a1f;
+  --beer: #b8860b;
   --serif: 'Georgia', 'Times New Roman', serif;
   --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
 }
@@ -95,6 +96,7 @@ body {
 .cat-liquor   .dot { background: var(--liquor);   }
 .cat-cannabis .dot { background: var(--cannabis); }
 .cat-tobacco  .dot { background: var(--tobacco);  }
+.cat-beer     .dot { background: var(--beer);     }
 .cat-toggle .count {
   color: var(--vc-muted);
   font-size: 12px;
@@ -204,6 +206,7 @@ body {
 .pop-cat.liquor   { background: var(--liquor);   }
 .pop-cat.cannabis { background: var(--cannabis); }
 .pop-cat.tobacco  { background: var(--tobacco);  }
+.pop-cat.beer     { background: var(--beer);     }
 .leaflet-popup-content .pop-addr { color: var(--vc-muted); margin-bottom: 4px; }
 .leaflet-popup-content .pop-meta { font-size: 11px; color: var(--vc-muted); }
 .leaflet-popup-content a { color: var(--vc-accent); }
@@ -224,6 +227,7 @@ body {
 .cat-pill.liquor   { background: var(--liquor);   }
 .cat-pill.cannabis { background: var(--cannabis); }
 .cat-pill.tobacco  { background: var(--tobacco);  }
+.cat-pill.beer     { background: var(--beer);     }
 
 @media (max-width: 700px) {
   .topbar { padding: 14px 16px 10px; }

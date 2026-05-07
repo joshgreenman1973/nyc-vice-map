@@ -6,12 +6,15 @@
     liquor:   '#b8312f',
     cannabis: '#2e7d4f',
     tobacco:  '#c97a1f',
+    beer:     '#b8860b',
   };
   const CAT_LABEL = {
     liquor:   'Liquor store',
     cannabis: 'Cannabis dispensary',
     tobacco:  'Tobacco / vape',
+    beer:     'Beer (grocery / deli)',
   };
+  const CATS = ['liquor', 'cannabis', 'tobacco', 'beer'];
 
   const map = L.map('map', { preferCanvas: true }).setView([40.72, -73.96], 11);
 
@@ -28,11 +31,12 @@
     liquor:   { 0.2: '#fff5f4', 0.5: '#e88f8e', 0.8: '#b8312f', 1.0: '#7a1a18' },
     cannabis: { 0.2: '#eef7f0', 0.5: '#7fc09a', 0.8: '#2e7d4f', 1.0: '#1a4a2e' },
     tobacco:  { 0.2: '#fdf3e7', 0.5: '#e3b378', 0.8: '#c97a1f', 1.0: '#7a4810' },
+    beer:     { 0.2: '#fbf3dc', 0.5: '#dcbf6a', 0.8: '#b8860b', 1.0: '#705208' },
   };
 
   // One cluster group per category so toggles stay snappy
   const clusters = {};
-  ['liquor', 'cannabis', 'tobacco'].forEach((cat) => {
+  CATS.forEach((cat) => {
     clusters[cat] = L.markerClusterGroup({
       chunkedLoading: true,
       showCoverageOnHover: false,
@@ -52,7 +56,7 @@
   let allFeatures = [];
   const state = {
     view: 'markers',  // 'markers' | 'heat'
-    cats: { liquor: true, cannabis: true, tobacco: true },
+    cats: { liquor: true, cannabis: true, tobacco: true, beer: false },
     borough: '',
     query: '',
   };
@@ -107,8 +111,8 @@
   }
 
   function applyFilters() {
-    const buckets = { liquor: [], cannabis: [], tobacco: [] };
-    const heatPoints = { liquor: [], cannabis: [], tobacco: [] };
+    const buckets = { liquor: [], cannabis: [], tobacco: [], beer: [] };
+    const heatPoints = { liquor: [], cannabis: [], tobacco: [], beer: [] };
     let visible = 0;
     for (const f of allFeatures) {
       if (!passesFilters(f.properties)) continue;
@@ -183,11 +187,11 @@
     });
     document.getElementById('reset-btn').addEventListener('click', () => {
       state.view = 'markers';
-      state.cats = { liquor: true, cannabis: true, tobacco: true };
+      state.cats = { liquor: true, cannabis: true, tobacco: true, beer: false };
       state.borough = '';
       state.query = '';
       document.querySelectorAll('.view-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === 'markers'));
-      document.querySelectorAll('.cat-toggle input').forEach((el) => (el.checked = true));
+      document.querySelectorAll('.cat-toggle input').forEach((el) => (el.checked = state.cats[el.dataset.cat]));
       document.getElementById('borough-filter').value = '';
       document.getElementById('search').value = '';
       applyFilters();
@@ -208,7 +212,7 @@
       columns: [
         {
           title: 'Category', field: 'category', width: 130, headerFilter: 'list',
-          headerFilterParams: { values: { liquor: 'Liquor', cannabis: 'Cannabis', tobacco: 'Tobacco' }, clearable: true },
+          headerFilterParams: { values: { liquor: 'Liquor', cannabis: 'Cannabis', tobacco: 'Tobacco', beer: 'Beer' }, clearable: true },
           formatter: (cell) => `<span class="cat-pill ${cell.getValue()}">${cell.getValue()}</span>`,
         },
         { title: 'Name', field: 'name', headerFilter: 'input', minWidth: 180 },

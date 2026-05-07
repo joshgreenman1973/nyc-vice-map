@@ -1,12 +1,13 @@
 {
-  "generated_at": "2026-05-07T21:00:06+00:00",
+  "generated_at": "2026-05-07T21:18:16+00:00",
   "counts": {
     "liquor": 1498,
+    "beer": 6693,
     "cannabis": 406,
     "tobacco": 5073,
-    "total": 6977
+    "total": 13670
   },
-  "mapped_features": 6970,
+  "mapped_features": 13662,
   "sources": [
     {
       "category": "Liquor stores",
@@ -14,6 +15,14 @@
       "agency": "New York State Liquor Authority",
       "endpoint": "https://data.ny.gov/d/9s3h-dpkz",
       "filter": "description IN ('Liquor Store','Wine Store') AND county in 5 NYC boroughs",
+      "geocoding": "Built-in georeference field"
+    },
+    {
+      "category": "Beer (groceries / delis / drug stores)",
+      "name": "Current Liquor Authority Active Licenses",
+      "agency": "New York State Liquor Authority",
+      "endpoint": "https://data.ny.gov/d/9s3h-dpkz",
+      "filter": "description IN ('Grocery Store','Drug Store') AND county in 5 NYC boroughs",
       "geocoding": "Built-in georeference field"
     },
     {
