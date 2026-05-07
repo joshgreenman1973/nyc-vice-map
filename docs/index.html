@@ -61,7 +61,10 @@
       <option>Bronx</option>
       <option>Staten Island</option>
     </select>
-    <input type="search" id="search" placeholder="Search by name, address, or ZIP">
+    <div class="search-wrap">
+      <input type="search" id="search" placeholder="Search by name, address, or ZIP" autocomplete="off">
+      <div id="suggestions" class="suggestions" hidden></div>
+    </div>
     <button id="reset-btn" type="button">Reset</button>
     <span id="visible-count" class="visible-count">—</span>
   </div>

@@ -134,7 +134,58 @@ body {
   border-radius: 4px;
   background: #fff;
 }
-#search { flex: 1; min-width: 180px; max-width: 360px; }
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 360px;
+}
+#search { width: 100%; }
+.suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--vc-rule);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--vc-rule);
+  font-size: 13px;
+  line-height: 1.3;
+}
+.suggestion:last-child { border-bottom: none; }
+.suggestion:hover, .suggestion.active { background: var(--vc-bg); }
+.suggestion .s-dot {
+  flex: 0 0 9px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+}
+.suggestion .s-text { min-width: 0; flex: 1; }
+.suggestion .s-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.suggestion .s-addr {
+  color: var(--vc-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.suggestion mark { background: #fff3a0; color: inherit; padding: 0; }
 #reset-btn {
   font: inherit;
   font-size: 13px;

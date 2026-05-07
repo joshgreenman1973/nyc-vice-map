@@ -177,13 +177,144 @@
       state.borough = e.target.value;
       applyFilters();
     });
+    const searchEl = document.getElementById('search');
+    const sugEl = document.getElementById('suggestions');
+    let activeIdx = -1;
+    let currentSuggestions = [];
     let t;
-    document.getElementById('search').addEventListener('input', (e) => {
+
+    function rankMatches(q) {
+      const ql = q.toLowerCase();
+      const out = [];
+      for (const f of allFeatures) {
+        const p = f.properties;
+        if (!state.cats[p.category]) continue;  // respect active layers
+        if (state.borough && p.borough !== state.borough) continue;
+        const name = (p.name || '').toLowerCase();
+        const addr = (p.address || '').toLowerCase();
+        const zip = p.zip || '';
+        let score = -1;
+        if (name.startsWith(ql)) score = 100;
+        else if (addr.startsWith(ql)) score = 90;
+        else if (name.includes(ql)) score = 60;
+        else if (addr.includes(ql)) score = 50;
+        else if (zip === ql) score = 40;
+        else if (zip.startsWith(ql)) score = 30;
+        if (score >= 0) out.push({ f, score });
+        if (out.length > 400) break;  // cap inner loop
+      }
+      out.sort((a, b) => b.score - a.score);
+      return out.slice(0, 8).map((x) => x.f);
+    }
+
+    function highlight(text, q) {
+      if (!q) return escapeHtml(text);
+      const lower = text.toLowerCase();
+      const i = lower.indexOf(q.toLowerCase());
+      if (i < 0) return escapeHtml(text);
+      return (
+        escapeHtml(text.slice(0, i)) +
+        '<mark>' + escapeHtml(text.slice(i, i + q.length)) + '</mark>' +
+        escapeHtml(text.slice(i + q.length))
+      );
+    }
+
+    function renderSuggestions(q) {
+      if (q.length < 2) {
+        sugEl.hidden = true;
+        sugEl.innerHTML = '';
+        currentSuggestions = [];
+        return;
+      }
+      const matches = rankMatches(q);
+      currentSuggestions = matches;
+      activeIdx = -1;
+      if (!matches.length) {
+        sugEl.hidden = true;
+        sugEl.innerHTML = '';
+        return;
+      }
+      sugEl.innerHTML = matches.map((f, i) => {
+        const p = f.properties;
+        return `
+          <div class="suggestion" data-idx="${i}">
+            <span class="s-dot" style="background:${CAT_COLOR[p.category]}"></span>
+            <span class="s-text">
+              <div class="s-name">${highlight(p.name || '(unnamed)', q)}</div>
+              <div class="s-addr">${highlight(p.address || '', q)}</div>
+            </span>
+          </div>
+        `;
+      }).join('');
+      sugEl.hidden = false;
+    }
+
+    function pickSuggestion(idx) {
+      const f = currentSuggestions[idx];
+      if (!f) return;
+      const [lon, lat] = f.geometry.coordinates;
+      // Make sure the marker is on the map even in heat view
+      if (state.view === 'heat') {
+        document.querySelector('.view-btn[data-view="markers"]').click();
+      }
+      map.setView([lat, lon], 18);
+      if (f._marker) {
+        // Cluster may need a moment to expand; open popup after a tick
+        setTimeout(() => f._marker.openPopup(), 250);
+      }
+      sugEl.hidden = true;
+      searchEl.value = f.properties.name || f.properties.address || '';
+      state.query = searchEl.value;
+      applyFilters();
+    }
+
+    searchEl.addEventListener('input', (e) => {
       clearTimeout(t);
+      const v = e.target.value.trim();
+      renderSuggestions(v);
       t = setTimeout(() => {
-        state.query = e.target.value.trim();
+        state.query = v;
         applyFilters();
       }, 150);
+    });
+
+    searchEl.addEventListener('keydown', (e) => {
+      if (sugEl.hidden) return;
+      const items = sugEl.querySelectorAll('.suggestion');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIdx = Math.min(activeIdx + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIdx = Math.max(activeIdx - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+      } else if (e.key === 'Enter') {
+        if (activeIdx >= 0) {
+          e.preventDefault();
+          pickSuggestion(activeIdx);
+        } else if (currentSuggestions.length) {
+          e.preventDefault();
+          pickSuggestion(0);
+        }
+      } else if (e.key === 'Escape') {
+        sugEl.hidden = true;
+      }
+    });
+
+    sugEl.addEventListener('mousedown', (e) => {
+      // mousedown beats blur — so the click registers
+      const item = e.target.closest('.suggestion');
+      if (!item) return;
+      e.preventDefault();
+      pickSuggestion(parseInt(item.dataset.idx, 10));
+    });
+
+    searchEl.addEventListener('blur', () => {
+      setTimeout(() => { sugEl.hidden = true; }, 150);
+    });
+    searchEl.addEventListener('focus', () => {
+      if (searchEl.value.trim().length >= 2) renderSuggestions(searchEl.value.trim());
     });
     document.getElementById('reset-btn').addEventListener('click', () => {
       state.view = 'markers';
