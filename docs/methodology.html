@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Methodology — New York City vice map</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wordmark">VITAL CITY</div>
+  <div class="title-block">
+    <h1>Methodology &amp; sources</h1>
+    <p class="dek">How the New York City vice map is built. <a href="index.html">Back to the map</a>.</p>
+  </div>
+</header>
+
+<article class="prose">
+
+<p>This map combines three official, regulator-maintained license rolls into a single view. Every dot is a current license held by a business at a specific address in the five boroughs. Nothing on the map is sourced from third-party directories, scraped review sites, or anonymous tips.</p>
+
+<h2>What is included</h2>
+
+<table>
+  <thead>
+    <tr><th>Category</th><th>Source</th><th>Filter</th><th>Geocoding</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Liquor stores</strong></td>
+      <td>New York State Liquor Authority — <a href="https://data.ny.gov/d/9s3h-dpkz" target="_blank" rel="noopener">Current Liquor Authority Active Licenses</a> on the Open Data NY portal.</td>
+      <td><code>description IN ('Liquor Store', 'Wine Store')</code> and the premises county is one of the five boroughs. These are off-premises (package store) licenses only — bars, restaurants, and grocery beer-and-wine licenses are not included.</td>
+      <td>Latitude and longitude come from the dataset's built-in <code>georeference</code> field.</td>
+    </tr>
+    <tr>
+      <td><strong>Legal cannabis dispensaries</strong></td>
+      <td>New York State Office of Cannabis Management — <a href="https://data.ny.gov/d/jskf-tt3q" target="_blank" rel="noopener">Current OCM Licenses</a>.</td>
+      <td>Active adult-use retail dispensary licenses, conditional adult-use retail dispensary licenses, registered organization dispensaries, and adult-use microbusinesses with retail activity authorized. License status must be Active and the county must be one of the five boroughs.</td>
+      <td>OCM does not publish coordinates. Addresses are geocoded with the New York City Department of City Planning's <a href="https://geosearch.planninglabs.nyc/" target="_blank" rel="noopener">GeoSearch API</a>. Records that fail to geocode are kept in the downloadable CSV but excluded from the map.</td>
+    </tr>
+    <tr>
+      <td><strong>Tobacco and e-cigarette retailers</strong></td>
+      <td>New York City Department of Consumer and Worker Protection — <a href="https://data.cityofnewyork.us/d/w7w3-xahh" target="_blank" rel="noopener">Legally Operating Businesses</a>.</td>
+      <td><code>business_category IN ('Tobacco Retail Dealer', 'Electronic Cigarette Dealer')</code> and license status is Active or Ready for Renewal.</td>
+      <td>Latitude and longitude come from the dataset's built-in coordinate fields.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Refresh schedule</h2>
+<p>The data is rebuilt automatically once a week from the original sources. The footer of <a href="index.html">the map</a> shows the date of the most recent refresh. The full build script is in this project's GitHub repository.</p>
+
+<h2>What is not included</h2>
+<ul>
+  <li><strong>Bars and restaurants.</strong> On-premises liquor licenses (restaurants, additional bars, clubs, hotels) are excluded. The goal here is retail-takeaway vice, not nightlife.</li>
+  <li><strong>Grocery beer-and-wine sales.</strong> Bodegas and grocery stores can sell beer with a different SLA license class; those are not retail liquor stores and are not included.</li>
+  <li><strong>Unlicensed cannabis or smoke shops.</strong> The OCM dataset contains only legal, licensed dispensaries. Unlicensed sellers — the bulk of New York City's "smoke shop" landscape since 2022 — are by definition not in any regulator's database. The New York City Sheriff's Office tracks shops shut down under Operation Padlock to Protect, but those records are released as press notices rather than as a clean dataset, so they are not currently incorporated here.</li>
+  <li><strong>Gambling, adult entertainment, and other vice categories.</strong> Out of scope for this version.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li><strong>A current license is not a guarantee that the business is open.</strong> Licensees can close, move, or transfer ownership without immediately notifying the regulator. Expect a real-world error rate of several percent on any given day.</li>
+  <li><strong>Co-located businesses.</strong> A single storefront can hold multiple licenses (for example, a bodega may be both a tobacco dealer and a beer-licensed grocery). On the map these appear as overlapping dots in different categories.</li>
+  <li><strong>Geocoding errors.</strong> Most addresses geocode cleanly, but a small number resolve to the centroid of a long block, an incorrect side of a street, or fail outright. The downloadable CSV preserves the original address as reported by the regulator.</li>
+  <li><strong>Cannabis license status churn.</strong> The OCM dataset changes weekly as new licenses are issued, surrendered, or moved between conditional and full status. The map shows whatever status was current at the time of the last refresh.</li>
+</ul>
+
+<h2>Reproducing this</h2>
+<p>The full build pipeline is a single Python script with no dependencies beyond the standard library. It pulls each source via Socrata's open API, filters and normalizes the records, geocodes the cannabis addresses against GeoSearch with a local cache, and writes a merged GeoJSON, a CSV, and this metadata file. See <code>scripts/build_data.py</code> in the GitHub repository.</p>
+
+<h2>Downloads</h2>
+<ul>
+  <li><a href="data/locations.geojson">locations.geojson</a> — every mapped point</li>
+  <li><a href="data/locations.csv">locations.csv</a> — every record, including any that failed to geocode</li>
+  <li><a href="data/methodology.json">methodology.json</a> — refresh date, row counts, and source metadata</li>
+</ul>
+
+<p style="margin-top:32px;"><a href="index.html">← Back to the map</a></p>
+
+</article>
+</body>
+</html>

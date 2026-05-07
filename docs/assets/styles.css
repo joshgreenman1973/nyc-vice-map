@@ -1,0 +1,237 @@
+/* Vital City tokens */
+:root {
+  --vc-bg: #faf8f3;
+  --vc-ink: #1a1a1a;
+  --vc-muted: #666;
+  --vc-rule: #e5e0d6;
+  --vc-accent: #b8312f;
+  --liquor: #b8312f;
+  --cannabis: #2e7d4f;
+  --tobacco: #c97a1f;
+  --serif: 'Georgia', 'Times New Roman', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  color: var(--vc-ink);
+  background: var(--vc-bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.topbar {
+  padding: 18px 24px 12px;
+  border-bottom: 1px solid var(--vc-rule);
+  background: var(--vc-bg);
+}
+.wordmark {
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  font-size: 13px;
+  color: var(--vc-accent);
+  margin-bottom: 8px;
+}
+.title-block h1 {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3.2vw, 32px);
+  margin: 0 0 4px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.title-block .dek {
+  margin: 0;
+  color: var(--vc-muted);
+  font-size: 14px;
+  max-width: 70ch;
+}
+.methodology-link {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  font-size: 12px;
+  color: var(--vc-muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--vc-muted);
+}
+.methodology-link:hover { color: var(--vc-ink); border-bottom-color: var(--vc-ink); }
+
+#controls {
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid var(--vc-rule);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+.cat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.cat-toggle input {
+  accent-color: var(--vc-ink);
+  width: 16px; height: 16px;
+}
+.cat-toggle .dot {
+  display: inline-block;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+}
+.cat-liquor   .dot { background: var(--liquor);   }
+.cat-cannabis .dot { background: var(--cannabis); }
+.cat-tobacco  .dot { background: var(--tobacco);  }
+.cat-toggle .count {
+  color: var(--vc-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+#borough-filter, #search {
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid var(--vc-rule);
+  border-radius: 4px;
+  background: #fff;
+}
+#search { flex: 1; min-width: 180px; max-width: 360px; }
+#reset-btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--vc-rule);
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#reset-btn:hover { background: var(--vc-bg); }
+.visible-count {
+  font-size: 12px;
+  color: var(--vc-muted);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+#map {
+  width: 100%;
+  height: 60vh;
+  min-height: 420px;
+}
+
+#table-section {
+  padding: 24px;
+  background: #fff;
+  border-top: 1px solid var(--vc-rule);
+}
+#table-section h2 {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+#table { font-size: 13px; }
+
+.site-footer {
+  padding: 20px 24px 40px;
+  border-top: 1px solid var(--vc-rule);
+  font-size: 12px;
+  color: var(--vc-muted);
+  background: var(--vc-bg);
+}
+.site-footer p { margin: 0 0 6px; max-width: 80ch; }
+.site-footer a { color: var(--vc-muted); }
+.site-footer .meta { font-size: 11px; }
+
+/* Popup styling */
+.leaflet-popup-content {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 10px 14px;
+}
+.leaflet-popup-content .pop-name {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.leaflet-popup-content .pop-cat {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.pop-cat.liquor   { background: var(--liquor);   }
+.pop-cat.cannabis { background: var(--cannabis); }
+.pop-cat.tobacco  { background: var(--tobacco);  }
+.leaflet-popup-content .pop-addr { color: var(--vc-muted); margin-bottom: 4px; }
+.leaflet-popup-content .pop-meta { font-size: 11px; color: var(--vc-muted); }
+.leaflet-popup-content a { color: var(--vc-accent); }
+
+/* Tabulator overrides */
+.tabulator { background: #fff; border: 1px solid var(--vc-rule); border-radius: 4px; }
+.tabulator .tabulator-header { background: var(--vc-bg); }
+.tabulator-row .tabulator-cell { padding: 8px 10px; }
+.tabulator .cat-pill {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: #fff;
+}
+.cat-pill.liquor   { background: var(--liquor);   }
+.cat-pill.cannabis { background: var(--cannabis); }
+.cat-pill.tobacco  { background: var(--tobacco);  }
+
+@media (max-width: 700px) {
+  .topbar { padding: 14px 16px 10px; }
+  .methodology-link { top: 16px; right: 16px; }
+  #controls { padding: 10px 16px; }
+  #map { height: 55vh; min-height: 360px; }
+  #table-section { padding: 16px; }
+}
+
+/* Methodology page */
+.prose {
+  max-width: 72ch;
+  padding: 24px;
+  line-height: 1.6;
+}
+.prose h1, .prose h2 {
+  font-family: var(--serif);
+}
+.prose h1 { font-size: 28px; margin: 0 0 6px; }
+.prose h2 { font-size: 18px; margin: 24px 0 8px; }
+.prose table {
+  width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0;
+}
+.prose th, .prose td {
+  text-align: left; padding: 8px; border-bottom: 1px solid var(--vc-rule);
+  vertical-align: top;
+}
+.prose th { background: var(--vc-bg); }
+.prose code {
+  font-size: 12px; background: var(--vc-bg);
+  padding: 1px 4px; border-radius: 3px;
+}
+.prose ul { padding-left: 22px; }
+.prose li { margin-bottom: 6px; }

@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-05-07T21:00:06+00:00",
+  "counts": {
+    "liquor": 1498,
+    "cannabis": 406,
+    "tobacco": 5073,
+    "total": 6977
+  },
+  "mapped_features": 6970,
+  "sources": [
+    {
+      "category": "Liquor stores",
+      "name": "Current Liquor Authority Active Licenses",
+      "agency": "New York State Liquor Authority",
+      "endpoint": "https://data.ny.gov/d/9s3h-dpkz",
+      "filter": "description IN ('Liquor Store','Wine Store') AND county in 5 NYC boroughs",
+      "geocoding": "Built-in georeference field"
+    },
+    {
+      "category": "Legal cannabis dispensaries",
+      "name": "Current OCM Licenses",
+      "agency": "New York State Office of Cannabis Management",
+      "endpoint": "https://data.ny.gov/d/jskf-tt3q",
+      "filter": "license_type in adult-use retail/microbusiness/RO dispensary types AND license_status='Active' AND county in 5 NYC boroughs",
+      "geocoding": "NYC DCP GeoSearch (https://geosearch.planninglabs.nyc)"
+    },
+    {
+      "category": "Tobacco / e-cigarette retailers",
+      "name": "Legally Operating Businesses",
+      "agency": "NYC Department of Consumer and Worker Protection",
+      "endpoint": "https://data.cityofnewyork.us/d/w7w3-xahh",
+      "filter": "business_category IN ('Tobacco Retail Dealer','Electronic Cigarette Dealer') AND license_status in ('Active','Ready for Renewal')",
+      "geocoding": "Built-in latitude/longitude fields"
+    }
+  ],
+  "limitations": [
+    "A current license is not the same as a currently operating business. Some licensees close, move, or sell without notifying the regulator.",
+    "Illegal/unlicensed cannabis or smoke shops are not in any of these datasets.",
+    "Licensees can hold multiple license types at one address (e.g., a bodega may appear as both a liquor seller and a tobacco dealer at the same address).",
+    "OCM addresses are geocoded via NYC DCP GeoSearch. A small share of records fail to geocode; those are excluded from the map but kept in the CSV."
+  ]
+}

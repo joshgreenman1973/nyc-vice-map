@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New York City vice map — liquor, cannabis, tobacco</title>
+<meta name="description" content="An interactive map of every licensed liquor store, legal cannabis dispensary, and tobacco/e-cigarette retailer in New York City.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="https://unpkg.com/tabulator-tables@5.5.4/dist/css/tabulator_simple.min.css" />
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/tabulator-tables@5.5.4/dist/js/tabulator.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wordmark">VITAL CITY</div>
+  <div class="title-block">
+    <h1>New York City vice map</h1>
+    <p class="dek">Every licensed liquor store, legal cannabis dispensary, and tobacco or e-cigarette retailer in the five boroughs.</p>
+  </div>
+  <a class="methodology-link" href="methodology.html">Methodology &amp; sources</a>
+</header>
+
+<section id="controls">
+  <div class="control-row">
+    <label class="cat-toggle cat-liquor">
+      <input type="checkbox" data-cat="liquor" checked>
+      <span class="dot"></span>
+      Liquor stores <span class="count" data-count="liquor">—</span>
+    </label>
+    <label class="cat-toggle cat-cannabis">
+      <input type="checkbox" data-cat="cannabis" checked>
+      <span class="dot"></span>
+      Legal cannabis <span class="count" data-count="cannabis">—</span>
+    </label>
+    <label class="cat-toggle cat-tobacco">
+      <input type="checkbox" data-cat="tobacco" checked>
+      <span class="dot"></span>
+      Tobacco / vape <span class="count" data-count="tobacco">—</span>
+    </label>
+  </div>
+  <div class="control-row">
+    <select id="borough-filter">
+      <option value="">All boroughs</option>
+      <option>Manhattan</option>
+      <option>Brooklyn</option>
+      <option>Queens</option>
+      <option>Bronx</option>
+      <option>Staten Island</option>
+    </select>
+    <input type="search" id="search" placeholder="Search by name, address, or ZIP">
+    <button id="reset-btn" type="button">Reset</button>
+    <span id="visible-count" class="visible-count">—</span>
+  </div>
+</section>
+
+<div id="map"></div>
+
+<section id="table-section">
+  <h2>All locations</h2>
+  <div id="table"></div>
+</section>
+
+<footer class="site-footer">
+  <p>
+    Data refreshed weekly from the New York State Liquor Authority, the New York State Office of Cannabis Management, and the New York City Department of Consumer and Worker Protection. A current license does not guarantee a business is currently open. See the <a href="methodology.html">methodology</a> for filters and limitations.
+  </p>
+  <p class="meta" id="meta-line">Loading…</p>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
