@@ -40,7 +40,7 @@ COUNTY_TO_BOROUGH = {
     "Richmond": "Staten Island",
 }
 
-UA = "nyc-vice-map/1.0 (+https://github.com/vitalcity-nyc/nyc-vice-map)"
+UA = "nyc-vice-map/1.0 (+https://github.com/joshgreenman1973/nyc-vice-map)"
 
 
 def fetch_json(url: str, timeout: int = 120):

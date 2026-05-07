@@ -2,7 +2,7 @@
 
 Interactive map of every licensed liquor store, legal cannabis dispensary, and tobacco / e-cigarette retailer in the five boroughs of New York City. Built from regulator-maintained license rolls; rebuilt weekly.
 
-**Live site:** https://vitalcity-nyc.github.io/nyc-vice-map/
+**Live site:** https://joshgreenman1973.github.io/nyc-vice-map/
 
 ## Sources
 
