@@ -62,15 +62,30 @@
       <option>Staten Island</option>
     </select>
     <div class="search-wrap">
-      <input type="search" id="search" placeholder="Search by name, address, or ZIP" autocomplete="off">
+      <input type="search" id="search" placeholder="Type any NYC address — see vice stores nearby" autocomplete="off">
       <div id="suggestions" class="suggestions" hidden></div>
     </div>
+    <select id="radius-select" title="Radius around the searched address">
+      <option value="0.1">0.1 mi</option>
+      <option value="0.25" selected>0.25 mi</option>
+      <option value="0.5">0.5 mi</option>
+      <option value="1">1 mi</option>
+    </select>
     <button id="reset-btn" type="button">Reset</button>
     <span id="visible-count" class="visible-count">—</span>
   </div>
 </section>
 
-<div id="map"></div>
+<div id="map">
+  <aside id="nearby-panel" class="nearby-panel" hidden>
+    <header>
+      <h3 id="nearby-title">Nearby</h3>
+      <button id="nearby-close" type="button" aria-label="Clear address">×</button>
+    </header>
+    <div id="nearby-summary" class="nearby-summary"></div>
+    <ol id="nearby-list" class="nearby-list"></ol>
+  </aside>
+</div>
 
 <section id="table-section">
   <h2>All locations</h2>

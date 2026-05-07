@@ -58,7 +58,8 @@
     view: 'markers',  // 'markers' | 'heat'
     cats: { liquor: true, cannabis: true, tobacco: true, beer: false },
     borough: '',
-    query: '',
+    radiusMiles: 0.25,
+    anchor: null,  // { lat, lon, label } if user picked an address
   };
   let table;
 
@@ -96,11 +97,6 @@
   function passesFilters(p) {
     if (!state.cats[p.category]) return false;
     if (state.borough && p.borough !== state.borough) return false;
-    if (state.query) {
-      const q = state.query.toLowerCase();
-      const blob = `${p.name || ''} ${p.address || ''} ${p.zip || ''} ${p.subcategory || ''}`.toLowerCase();
-      if (!blob.includes(q)) return false;
-    }
     return true;
   }
 
@@ -156,6 +152,7 @@
     if (table) {
       table.setFilter((row) => passesFilters(row));
     }
+    if (state.anchor) renderNearby();
   }
 
   function bindControls() {
@@ -177,105 +174,207 @@
       state.borough = e.target.value;
       applyFilters();
     });
+    setupAddressSearch();
+
+    document.getElementById('radius-select').addEventListener('change', (e) => {
+      state.radiusMiles = parseFloat(e.target.value);
+      if (state.anchor) renderNearby();
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      state.view = 'markers';
+      state.cats = { liquor: true, cannabis: true, tobacco: true, beer: false };
+      state.borough = '';
+      document.querySelectorAll('.view-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === 'markers'));
+      document.querySelectorAll('.cat-toggle input').forEach((el) => (el.checked = state.cats[el.dataset.cat]));
+      document.getElementById('borough-filter').value = '';
+      document.getElementById('search').value = '';
+      clearAnchor();
+      applyFilters();
+      map.setView([40.72, -73.96], 11);
+    });
+    document.getElementById('nearby-close').addEventListener('click', () => {
+      document.getElementById('search').value = '';
+      clearAnchor();
+    });
+  }
+
+  // ---- Address search (GeoSearch autocomplete) + nearby panel ----
+  let anchorMarker = null;
+  let anchorCircle = null;
+
+  function clearAnchor() {
+    if (anchorMarker) { map.removeLayer(anchorMarker); anchorMarker = null; }
+    if (anchorCircle) { map.removeLayer(anchorCircle); anchorCircle = null; }
+    state.anchor = null;
+    document.getElementById('nearby-panel').hidden = true;
+  }
+
+  function haversineMiles(a, b) {
+    const R = 3958.7613; // earth radius in miles
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(b[0] - a[0]);
+    const dLon = toRad(b[1] - a[1]);
+    const lat1 = toRad(a[0]);
+    const lat2 = toRad(b[0]);
+    const h = Math.sin(dLat/2)**2 + Math.sin(dLon/2)**2 * Math.cos(lat1) * Math.cos(lat2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  function setAnchor(lat, lon, label) {
+    if (anchorMarker) map.removeLayer(anchorMarker);
+    if (anchorCircle) map.removeLayer(anchorCircle);
+    anchorMarker = L.marker([lat, lon], {
+      icon: L.divIcon({
+        className: '',
+        html: '<div style="width:18px;height:18px;border-radius:50%;background:#1a1a1a;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,0.4);"></div>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+      }),
+      keyboard: false,
+      interactive: false,
+    }).addTo(map);
+    state.anchor = { lat, lon, label };
+    renderNearby();
+  }
+
+  function renderNearby() {
+    if (!state.anchor) return;
+    const { lat, lon, label } = state.anchor;
+    const radius = state.radiusMiles;
+    if (anchorCircle) map.removeLayer(anchorCircle);
+    anchorCircle = L.circle([lat, lon], {
+      radius: radius * 1609.34,
+      color: '#1a1a1a',
+      weight: 1,
+      opacity: 0.5,
+      fillColor: '#1a1a1a',
+      fillOpacity: 0.04,
+    }).addTo(map);
+
+    const within = [];
+    const counts = { liquor: 0, cannabis: 0, tobacco: 0, beer: 0 };
+    for (const f of allFeatures) {
+      if (!state.cats[f.properties.category]) continue;
+      const [flon, flat] = f.geometry.coordinates;
+      const d = haversineMiles([lat, lon], [flat, flon]);
+      if (d <= radius) {
+        within.push({ f, d });
+        counts[f.properties.category]++;
+      }
+    }
+    within.sort((a, b) => a.d - b.d);
+
+    const panel = document.getElementById('nearby-panel');
+    document.getElementById('nearby-title').textContent = label;
+    const summary = document.getElementById('nearby-summary');
+    summary.innerHTML = [
+      `<div>${within.length} location${within.length === 1 ? '' : 's'} within ${radius} mi</div>`,
+      ...CATS.filter((c) => state.cats[c]).map((c) =>
+        `<span class="ns-cat"><span class="ns-dot" style="background:${CAT_COLOR[c]}"></span>${counts[c]} ${CAT_LABEL[c].toLowerCase()}</span>`
+      ),
+    ].join('');
+
+    const list = document.getElementById('nearby-list');
+    list.innerHTML = within.slice(0, 50).map(({ f, d }, idx) => {
+      const p = f.properties;
+      const ft = (d * 5280).toFixed(0);
+      const distLabel = d < 0.1 ? `${ft} ft` : `${d.toFixed(2)} mi`;
+      return `
+        <li data-idx="${idx}">
+          <span class="nl-dot" style="background:${CAT_COLOR[p.category]}"></span>
+          <span class="nl-text">
+            <div class="nl-name">${escapeHtml(p.name || '(unnamed)')}</div>
+            <div class="nl-meta">${escapeHtml(p.address || '')}</div>
+          </span>
+          <span class="nl-dist">${distLabel}</span>
+        </li>
+      `;
+    }).join('');
+
+    list.onclick = (e) => {
+      const li = e.target.closest('li');
+      if (!li) return;
+      const item = within[parseInt(li.dataset.idx, 10)];
+      if (!item) return;
+      const [flon, flat] = item.f.geometry.coordinates;
+      if (state.view === 'heat') {
+        document.querySelector('.view-btn[data-view="markers"]').click();
+      }
+      map.setView([flat, flon], 18);
+      if (item.f._marker) setTimeout(() => item.f._marker.openPopup(), 250);
+    };
+
+    panel.hidden = false;
+
+    // Frame the radius circle
+    map.fitBounds(anchorCircle.getBounds(), { padding: [40, 40] });
+  }
+
+  function setupAddressSearch() {
     const searchEl = document.getElementById('search');
     const sugEl = document.getElementById('suggestions');
     let activeIdx = -1;
     let currentSuggestions = [];
     let t;
+    let lastFetchSeq = 0;
 
-    function rankMatches(q) {
-      const ql = q.toLowerCase();
-      const out = [];
-      for (const f of allFeatures) {
-        const p = f.properties;
-        if (!state.cats[p.category]) continue;  // respect active layers
-        if (state.borough && p.borough !== state.borough) continue;
-        const name = (p.name || '').toLowerCase();
-        const addr = (p.address || '').toLowerCase();
-        const zip = p.zip || '';
-        let score = -1;
-        if (name.startsWith(ql)) score = 100;
-        else if (addr.startsWith(ql)) score = 90;
-        else if (name.includes(ql)) score = 60;
-        else if (addr.includes(ql)) score = 50;
-        else if (zip === ql) score = 40;
-        else if (zip.startsWith(ql)) score = 30;
-        if (score >= 0) out.push({ f, score });
-        if (out.length > 400) break;  // cap inner loop
+    async function fetchAddressSuggestions(q) {
+      const seq = ++lastFetchSeq;
+      const url = 'https://geosearch.planninglabs.nyc/v2/autocomplete?size=8&text=' + encodeURIComponent(q);
+      try {
+        const r = await fetch(url);
+        const data = await r.json();
+        if (seq !== lastFetchSeq) return;  // stale
+        const feats = (data.features || []).filter((f) => f.geometry && f.geometry.type === 'Point');
+        currentSuggestions = feats;
+        activeIdx = -1;
+        if (!feats.length) {
+          sugEl.hidden = true;
+          sugEl.innerHTML = '';
+          return;
+        }
+        sugEl.innerHTML = feats.map((f, i) => {
+          const p = f.properties || {};
+          const label = p.label || p.name || '';
+          const sub = [p.borough, p.region, p.postalcode].filter(Boolean).join(' · ');
+          return `
+            <div class="suggestion" data-idx="${i}">
+              <span class="s-dot" style="background:#1a1a1a"></span>
+              <span class="s-text">
+                <div class="s-name">${escapeHtml(label)}</div>
+                <div class="s-addr">${escapeHtml(sub)}</div>
+              </span>
+            </div>
+          `;
+        }).join('');
+        sugEl.hidden = false;
+      } catch (e) {
+        console.error('autocomplete error', e);
       }
-      out.sort((a, b) => b.score - a.score);
-      return out.slice(0, 8).map((x) => x.f);
-    }
-
-    function highlight(text, q) {
-      if (!q) return escapeHtml(text);
-      const lower = text.toLowerCase();
-      const i = lower.indexOf(q.toLowerCase());
-      if (i < 0) return escapeHtml(text);
-      return (
-        escapeHtml(text.slice(0, i)) +
-        '<mark>' + escapeHtml(text.slice(i, i + q.length)) + '</mark>' +
-        escapeHtml(text.slice(i + q.length))
-      );
-    }
-
-    function renderSuggestions(q) {
-      if (q.length < 2) {
-        sugEl.hidden = true;
-        sugEl.innerHTML = '';
-        currentSuggestions = [];
-        return;
-      }
-      const matches = rankMatches(q);
-      currentSuggestions = matches;
-      activeIdx = -1;
-      if (!matches.length) {
-        sugEl.hidden = true;
-        sugEl.innerHTML = '';
-        return;
-      }
-      sugEl.innerHTML = matches.map((f, i) => {
-        const p = f.properties;
-        return `
-          <div class="suggestion" data-idx="${i}">
-            <span class="s-dot" style="background:${CAT_COLOR[p.category]}"></span>
-            <span class="s-text">
-              <div class="s-name">${highlight(p.name || '(unnamed)', q)}</div>
-              <div class="s-addr">${highlight(p.address || '', q)}</div>
-            </span>
-          </div>
-        `;
-      }).join('');
-      sugEl.hidden = false;
     }
 
     function pickSuggestion(idx) {
       const f = currentSuggestions[idx];
       if (!f) return;
       const [lon, lat] = f.geometry.coordinates;
-      // Make sure the marker is on the map even in heat view
+      const label = (f.properties && (f.properties.label || f.properties.name)) || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      searchEl.value = label;
+      sugEl.hidden = true;
       if (state.view === 'heat') {
         document.querySelector('.view-btn[data-view="markers"]').click();
       }
-      map.setView([lat, lon], 18);
-      if (f._marker) {
-        // Cluster may need a moment to expand; open popup after a tick
-        setTimeout(() => f._marker.openPopup(), 250);
-      }
-      sugEl.hidden = true;
-      searchEl.value = f.properties.name || f.properties.address || '';
-      state.query = searchEl.value;
-      applyFilters();
+      setAnchor(lat, lon, label);
     }
 
     searchEl.addEventListener('input', (e) => {
       clearTimeout(t);
       const v = e.target.value.trim();
-      renderSuggestions(v);
-      t = setTimeout(() => {
-        state.query = v;
-        applyFilters();
-      }, 150);
+      if (v.length < 3) {
+        sugEl.hidden = true;
+        return;
+      }
+      t = setTimeout(() => fetchAddressSuggestions(v), 180);
     });
 
     searchEl.addEventListener('keydown', (e) => {
@@ -303,7 +402,6 @@
     });
 
     sugEl.addEventListener('mousedown', (e) => {
-      // mousedown beats blur — so the click registers
       const item = e.target.closest('.suggestion');
       if (!item) return;
       e.preventDefault();
@@ -312,21 +410,6 @@
 
     searchEl.addEventListener('blur', () => {
       setTimeout(() => { sugEl.hidden = true; }, 150);
-    });
-    searchEl.addEventListener('focus', () => {
-      if (searchEl.value.trim().length >= 2) renderSuggestions(searchEl.value.trim());
-    });
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      state.view = 'markers';
-      state.cats = { liquor: true, cannabis: true, tobacco: true, beer: false };
-      state.borough = '';
-      state.query = '';
-      document.querySelectorAll('.view-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === 'markers'));
-      document.querySelectorAll('.cat-toggle input').forEach((el) => (el.checked = state.cats[el.dataset.cat]));
-      document.getElementById('borough-filter').value = '';
-      document.getElementById('search').value = '';
-      applyFilters();
-      map.setView([40.72, -73.96], 11);
     });
   }
 
