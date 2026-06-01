@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-05-25T12:38:17+00:00",
+  "generated_at": "2026-06-01T10:55:12+00:00",
   "counts": {
-    "liquor": 1499,
-    "beer": 6734,
-    "cannabis": 406,
+    "liquor": 1497,
+    "beer": 6747,
+    "cannabis": 408,
     "tobacco": 3579,
-    "total": 12218
+    "total": 12231
   },
-  "mapped_features": 12212,
+  "mapped_features": 12225,
   "sources": [
     {
       "category": "Liquor stores",
