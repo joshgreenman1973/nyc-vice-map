@@ -19,7 +19,7 @@
   const map = L.map('map', { preferCanvas: true }).setView([40.72, -73.96], 11);
 
   // CARTO Positron — clean basemap, free tier OK
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2r82_1_ae4e70b6166057bc41b89638', {
     attribution: '&copy; OpenStreetMap &copy; CARTO',
     subdomains: 'abcd',
     maxZoom: 19,
