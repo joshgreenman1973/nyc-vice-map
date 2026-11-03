@@ -17,7 +17,7 @@
 
 <article class="prose">
 
-<p>This map combines three official, regulator-maintained license rolls into a single view. Every dot is a current license held by a business at a specific address in the five boroughs. Nothing on the map is sourced from third-party directories, scraped review sites, or anonymous tips.</p>
+<p>This map combines three official, regulator-maintained license rolls into a single view. Every dot is a current license held by a business at a specific address in the five boroughs. Nothing on the map is sourced from third-party directories, scraped review sites or anonymous tips.</p>
 
 <h2>What is included</h2>
 
@@ -29,19 +29,19 @@
     <tr>
       <td><strong>Liquor stores</strong></td>
       <td>New York State Liquor Authority — <a href="https://data.ny.gov/d/9s3h-dpkz" target="_blank" rel="noopener">Current Liquor Authority Active Licenses</a> on the Open Data NY portal.</td>
-      <td><code>description IN ('Liquor Store', 'Wine Store')</code> and the premises county is one of the five boroughs. These are off-premises (package store) licenses only — bars, restaurants, and grocery beer licenses are not included. Under New York law, off-premises liquor stores cannot legally sell beer.</td>
+      <td><code>description IN ('Liquor Store', 'Wine Store')</code> and the premises county is one of the five boroughs. These are off-premises (package store) licenses only — bars, restaurants and grocery beer licenses are not included. Under New York law, off-premises liquor stores cannot legally sell beer.</td>
       <td>Latitude and longitude come from the dataset's built-in <code>georeference</code> field.</td>
     </tr>
     <tr>
       <td><strong>Beer (groceries, delis, drug stores)</strong></td>
       <td>New York State Liquor Authority — same dataset as liquor stores.</td>
-      <td><code>description IN ('Grocery Store', 'Drug Store')</code> and the premises county is one of the five boroughs. These are off-premises beer licenses, the universe of bodegas, delis, supermarkets, and drug stores authorized to sell beer (and, with a separate endorsement, wine). This category is hidden by default on the map because it is the largest single layer.</td>
+      <td><code>description IN ('Grocery Store', 'Drug Store')</code> and the premises county is one of the five boroughs. These are off-premises beer licenses, the universe of bodegas, delis, supermarkets and drug stores authorized to sell beer (and, with a separate endorsement, wine). This category is hidden by default on the map because it is the largest single layer.</td>
       <td>Built-in <code>georeference</code> field.</td>
     </tr>
     <tr>
       <td><strong>Legal cannabis dispensaries</strong></td>
       <td>New York State Office of Cannabis Management — <a href="https://data.ny.gov/d/jskf-tt3q" target="_blank" rel="noopener">Current OCM Licenses</a>.</td>
-      <td>Active adult-use retail dispensary licenses, conditional adult-use retail dispensary licenses, registered organization dispensaries, and adult-use microbusinesses with retail activity authorized. License status must be Active and the county must be one of the five boroughs.</td>
+      <td>Active adult-use retail dispensary licenses, conditional adult-use retail dispensary licenses, registered organization dispensaries and adult-use microbusinesses with retail activity authorized. License status must be Active and the county must be one of the five boroughs.</td>
       <td>OCM does not publish coordinates. Addresses are geocoded with the New York City Department of City Planning's <a href="https://geosearch.planninglabs.nyc/" target="_blank" rel="noopener">GeoSearch API</a>. Records that fail to geocode are kept in the downloadable CSV but excluded from the map.</td>
     </tr>
     <tr>
@@ -58,30 +58,30 @@
 
 <h2>What is not included</h2>
 <ul>
-  <li><strong>Bars and restaurants.</strong> On-premises liquor licenses (restaurants, additional bars, clubs, hotels) are excluded. The goal here is retail-takeaway vice, not nightlife.</li>
-  <li><strong>Grocery beer-and-wine sales.</strong> Bodegas and grocery stores can sell beer with a different SLA license class; those are not retail liquor stores and are not included.</li>
-  <li><strong>Unlicensed cannabis or smoke shops.</strong> The OCM dataset contains only legal, licensed dispensaries. Unlicensed sellers — the bulk of New York City's "smoke shop" landscape since 2022 — are by definition not in any regulator's database. The New York City Sheriff's Office tracks shops shut down under Operation Padlock to Protect, but those records are released as press notices rather than as a clean dataset, so they are not currently incorporated here.</li>
-  <li><strong>Gambling, adult entertainment, and other vice categories.</strong> Out of scope for this version.</li>
+  <li><strong>Bars and restaurants.</strong> On-premises liquor licenses (restaurants, additional bars, clubs, hotels) are excluded. The map covers retail takeaway only.</li>
+  <li><strong>Grocery beer-and-wine sales.</strong> Bodegas and grocery stores can sell beer with a different State Liquor Authority license class; those are not retail liquor stores and are not included.</li>
+  <li><strong>Unlicensed cannabis or smoke shops.</strong> The OCM dataset contains only legal, licensed dispensaries. Unlicensed sellers — the bulk of New York City's smoke shops since 2022 — are by definition not in any regulator's database. The New York City Sheriff's Office tracks shops shut down under Operation Padlock to Protect, but those records are released as press notices rather than as a clean dataset, so they are not currently incorporated here.</li>
+  <li><strong>Gambling, adult entertainment and other vice categories.</strong> Out of scope for this version.</li>
 </ul>
 
 <h2>Limitations</h2>
 <ul>
-  <li><strong>A current license is not a guarantee that the business is open.</strong> Licensees can close, move, or transfer ownership without immediately notifying the regulator. Expect a real-world error rate of several percent on any given day.</li>
+  <li><strong>A current license is not a guarantee that the business is open.</strong> Licensees can close, move or transfer ownership without immediately notifying the regulator. Expect a real-world error rate of several percent on any given day.</li>
   <li><strong>Co-located businesses.</strong> A single storefront can hold multiple licenses (for example, a bodega may be both a tobacco dealer and a beer-licensed grocery). On the map these appear as overlapping dots in different categories.</li>
-  <li><strong>Geocoding errors.</strong> Most addresses geocode cleanly, but a small number resolve to the centroid of a long block, an incorrect side of a street, or fail outright. The downloadable CSV preserves the original address as reported by the regulator.</li>
-  <li><strong>Cannabis license status churn.</strong> The OCM dataset changes weekly as new licenses are issued, surrendered, or moved between conditional and full status. The map shows whatever status was current at the time of the last refresh.</li>
-  <li><strong>Tobacco license deduplication.</strong> Roughly a third of New York City's tobacco-licensed storefronts also hold a separate Electronic Cigarette Dealer license. Without dedup, those addresses would appear as two stacked dots and double-count in the legend. The build script collapses co-located licenses (same BBL, or same building number, street, and ZIP) into a single feature labeled "Tobacco + e-cigarette." The license-count field on each feature records how many underlying licenses were merged.</li>
-  <li><strong>Liquor and beer at the same address.</strong> New York's liquor law forbids holding an off-premises liquor license and an off-premises beer license at the same physical premises. About two dozen addresses in the data nonetheless appear in both categories — a small fraction of one percent. These are almost always multi-tenant buildings (corner storefronts, malls, mixed-use buildings) where two distinct businesses share an address string. We flag them honestly rather than try to silently merge them.</li>
+  <li><strong>Geocoding errors.</strong> Most addresses geocode cleanly, but a small number resolve to the centroid of a long block or an incorrect side of a street, or fail outright. The downloadable CSV preserves the original address as reported by the regulator.</li>
+  <li><strong>Cannabis license status churn.</strong> The OCM dataset changes weekly as new licenses are issued, surrendered or moved between conditional and full status. The map shows whatever status was current at the time of the last refresh.</li>
+  <li><strong>Tobacco license deduplication.</strong> Roughly a third of New York City's tobacco-licensed storefronts also hold a separate Electronic Cigarette Dealer license. Without dedup, those addresses would appear as two stacked dots and double-count in the legend. The build script collapses co-located licenses (same BBL, or same building number, street and ZIP) into a single feature labeled "Tobacco + e-cigarette." The license-count field on each feature records how many underlying licenses were merged.</li>
+  <li><strong>Liquor and beer at the same address.</strong> New York's liquor law forbids holding an off-premises liquor license and an off-premises beer license at the same physical premises. About two dozen addresses in the data nonetheless appear in both categories — a small fraction of one percent. These are almost always multi-tenant buildings (corner storefronts, malls, mixed-use buildings) where two distinct businesses share an address string. We flag them and do not merge them.</li>
 </ul>
 
 <h2>Reproducing this</h2>
-<p>The full build pipeline is a single Python script with no dependencies beyond the standard library. It pulls each source via Socrata's open API, filters and normalizes the records, geocodes the cannabis addresses against GeoSearch with a local cache, and writes a merged GeoJSON, a CSV, and this metadata file. See <code>scripts/build_data.py</code> in the GitHub repository.</p>
+<p>The full build pipeline is a single Python script with no dependencies beyond the standard library. It pulls each source via Socrata's open API, filters and normalizes the records, geocodes the cannabis addresses against GeoSearch with a local cache and writes a merged GeoJSON, a CSV and this metadata file. See <code>scripts/build_data.py</code> in the GitHub repository.</p>
 
 <h2>Downloads</h2>
 <ul>
   <li><a href="data/locations.geojson">locations.geojson</a> — every mapped point</li>
   <li><a href="data/locations.csv">locations.csv</a> — every record, including any that failed to geocode</li>
-  <li><a href="data/methodology.json">methodology.json</a> — refresh date, row counts, and source metadata</li>
+  <li><a href="data/methodology.json">methodology.json</a> — refresh date, row counts and source metadata</li>
 </ul>
 
 <p style="margin-top:32px;"><a href="index.html">← Back to the map</a></p>

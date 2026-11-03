@@ -1,6 +1,6 @@
 # NYC vice map
 
-Interactive map of every licensed liquor store, legal cannabis dispensary, and tobacco / e-cigarette retailer in the five boroughs of New York City. Built from regulator-maintained license rolls; rebuilt weekly.
+Interactive map of every licensed liquor store, legal cannabis dispensary and tobacco / e-cigarette retailer in the five boroughs of New York City. Built from regulator-maintained license rolls; rebuilt weekly.
 
 **Live site:** https://joshgreenman1973.github.io/nyc-vice-map/
 
@@ -14,7 +14,7 @@ Interactive map of every licensed liquor store, legal cannabis dispensary, and t
 
 Geocoding via NYC Department of City Planning [GeoSearch](https://geosearch.planninglabs.nyc/).
 
-See [methodology](docs/methodology.html) for filters, limitations, and what is *not* included.
+See [methodology](docs/methodology.html) for filters, limitations and what is *not* included.
 
 ## Build
 

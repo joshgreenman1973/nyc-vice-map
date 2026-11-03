@@ -43,7 +43,7 @@
     }
   ],
   "limitations": [
-    "A current license is not the same as a currently operating business. Some licensees close, move, or sell without notifying the regulator.",
+    "A current license is not the same as a currently operating business. Some licensees close, move or sell without notifying the regulator.",
     "Illegal/unlicensed cannabis or smoke shops are not in any of these datasets.",
     "Licensees can hold multiple license types at one address (e.g., a bodega may appear as both a liquor seller and a tobacco dealer at the same address).",
     "OCM addresses are geocoded via NYC DCP GeoSearch. A small share of records fail to geocode; those are excluded from the map but kept in the CSV."
